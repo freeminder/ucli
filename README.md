@@ -19,8 +19,8 @@ This file should contain the following values:
 
 ## Command line arguments examples
 
-    $ ucli create  vps name=my-vps-name provider=softlayer image=ubuntu-14.04 region=dallas ram=2G cpus=1
-    $ ucli start   vps name=my-vps-name provider=softlayer
-    $ ucli reboot  vps name=my-vps-name provider=softlayer
-    $ ucli stop    vps name=my-vps-name provider=softlayer
-    $ ucli destroy vps name=my-vps-name provider=softlayer
+    $ ./ucli.rb --provider softlayer --action create --name=my-vps-name --image ubuntu-14.04 --region dallas --ram 2G --cpus 1
+    $ ./ucli.rb -p softlayer -a start -n my-vps-name
+    $ ./ucli.rb -p softlayer -a reboot -n my-vps-name
+    $ ./ucli.rb -p digitalocean -a stop -n my-vps-name
+    $ ./ucli.rb -p rackspace -a destroy -n my-vps-name
