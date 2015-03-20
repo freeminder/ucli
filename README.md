@@ -2,9 +2,15 @@
 
 Universal CLI for cloud providers.
 
+# Installation
+
+Run bundle in the root dir:
+
+    bundle
+
 # Usage
 
-You will need to create your own config.yml in the root dir.
+You have to create your own config.yml in the root dir.
 This file should contain the following values:
 
     provider: 'softlayer'
