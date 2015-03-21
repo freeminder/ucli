@@ -3,8 +3,12 @@
 Universal CLI for cloud providers.
 
 # Installation
+## Requirements
 
-You have to install the dependencies first. To do that, run bundle in the root dir:
+* **Ruby >= 1.9.2**
+* **Bundler**
+
+To install the dependencies, run bundle in the root dir:
 
     bundle
 
@@ -24,3 +28,5 @@ This file should contain the following values:
     $ ./ucli.rb -p softlayer -a reboot -n my-vps-name
     $ ./ucli.rb -p digitalocean -a stop -n my-vps-name
     $ ./ucli.rb -p rackspace -a destroy -n my-vps-name
+
+Run with **--help** argument for more info.
