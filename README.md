@@ -23,10 +23,10 @@ This file should contain the following values:
 
 ## Command line arguments examples
 
-    $ ./ucli.rb --provider softlayer --action create --name=my-vps-name --image ubuntu-14.04 --region dallas --ram 2G --cpus 1
-    $ ./ucli.rb -p softlayer -a start -n my-vps-name
-    $ ./ucli.rb -p softlayer -a reboot -n my-vps-name
-    $ ./ucli.rb -p digitalocean -a stop -n my-vps-name
-    $ ./ucli.rb -p rackspace -a destroy -n my-vps-name
+    $ ./ucli.rb create --provider=softlayer --name=my-vps-name --image=ubuntu-14.04 --region=dal05 --ram=2G --cpu=1
+    $ ./ucli.rb start -p softlayer -n my-vps-name
+    $ ./ucli.rb reboot -p softlayer -n my-vps-name
+    $ ./ucli.rb stop -p digitalocean -n my-vps-name
+    $ ./ucli.rb destroy -p rackspace -n my-vps-name
 
 Run with **--help** option or without any arguments for more info.
