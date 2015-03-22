@@ -29,4 +29,4 @@ This file should contain the following values:
     $ ./ucli.rb -p digitalocean -a stop -n my-vps-name
     $ ./ucli.rb -p rackspace -a destroy -n my-vps-name
 
-Run with **--help** argument for more info.
+Run with **--help** option or without any arguments for more info.
