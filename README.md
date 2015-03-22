@@ -23,7 +23,7 @@ This file should contain the following values:
 
 ## Command line arguments examples
 
-    $ ./ucli.rb create --provider=softlayer --name=my-vps-name --image=ubuntu-14.04 --region=dal05 --ram=2G --cpu=1
+    $ ./ucli.rb create --provider=softlayer --name=my-vps-name --image=UBUNTU_LATEST --region=dal05 --ram=2G --cpu=1
     $ ./ucli.rb start -p softlayer -n my-vps-name
     $ ./ucli.rb reboot -p softlayer -n my-vps-name
     $ ./ucli.rb stop -p digitalocean -n my-vps-name

@@ -20,7 +20,7 @@ class ThorClass < Thor
 	end
 
 	no_commands do
-		def sl_init
+		def sl_actions_init
 			@config = YAML.load_file('config.yml')
 			@sl = Fog::Compute.new(provider: @config['provider'], softlayer_username: @config['softlayer_username'], softlayer_api_key: @config['softlayer_api_key'])
 			@vps_name = options['name']
@@ -30,20 +30,24 @@ class ThorClass < Thor
 				srv_hash[n].select { |k,v| @srv_id = srv_hash[n]["id"] if v == @vps_name }
 				n += 1
 			end
-			abort "No VPS found with this name. Exiting." if @srv_id == nil
+			if ARGV[0] == "create"
+				@opts = {
+					:cpu => options['cpu'],
+					:ram => options['ram'],
+					:disk => [{'device' => 0, 'diskImage' => {'capacity' => 100 } }],
+					:ephemeral_storage => true,
+					:domain => "webenabled.net",
+					:name => "hostname",
+					:os_code => options['image'],
+					:name => options['name'],
+					:datacenter => options['region']
+				}
+				return
+			else
+				abort "No VPS found with this name. Exiting." if @srv_id == nil
+			end
 			@srv = @sl.servers.get(@srv_id)
 
-			$opts = {
-				:cpu => options['cpu'],
-				:ram => options['ram'],
-				:disk => [{'device' => 0, 'diskImage' => {'capacity' => 100 } }],
-				:ephemeral_storage => true,
-				:domain => "webenabled.net",
-				:name => "hostname",
-				:os_code => options['image'],
-				:name => options['name'],
-				:datacenter => options['region']
-			}
 		end
 		def vps_status
 			puts "VPS #{@vps_name} (id #{@srv_id}) status is #{@srv.state}."
@@ -54,7 +58,7 @@ class ThorClass < Thor
 	desc "status", "status of server"
 	OptionsHelper.method_options
 	def status
-		sl_init
+		sl_actions_init
 		vps_status
 	end
 
@@ -62,16 +66,15 @@ class ThorClass < Thor
 	OptionsHelper.method_options
 	OptionsHelper.method_options_create
 	def create
-		sl_init
-		@srv.create($opts)
-		puts "VPS has been created."
-		vps_status
+		sl_actions_init
+		@sl.servers.create(@opts)
+		puts "VPS has been created and will be ready in a few minutes."
 	end
 
 	desc "start", "start server"
 	OptionsHelper.method_options
 	def start
-		sl_init
+		sl_actions_init
 		if @srv.state == "Halted" then @srv.start else puts "Can't start VPS." end
 		puts "VPS has been started."
 		vps_status
@@ -80,7 +83,7 @@ class ThorClass < Thor
 	desc "stop" ,"stop server"
 	OptionsHelper.method_options
 	def stop
-		sl_init
+		sl_actions_init
 		if @srv.state == "Running" then @srv.stop else puts "Can't stop VPS." end
 		puts "VPS has been stopped."
 		vps_status
@@ -89,7 +92,7 @@ class ThorClass < Thor
 	desc "reboot" ,"reboot server"
 	OptionsHelper.method_options
 	def reboot
-		sl_init
+		sl_actions_init
 		if @srv.state == "Running" then @srv.reboot else puts "Can't reboot VPS." end
 		puts "VPS has been restarted."
 		vps_status
@@ -98,7 +101,7 @@ class ThorClass < Thor
 	desc "destroy" ,"destroy server"
 	OptionsHelper.method_options
 	def destroy
-		sl_init
+		sl_actions_init
 		if @srv.state == "Halted" then @srv.destroy else puts "Can't destroy VPS." end
 		puts "VPS has been destroyed."
 		vps_status
