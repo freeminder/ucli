@@ -30,3 +30,7 @@ This file should contain the following values:
     $ ./ucli.rb destroy -p rackspace -n my-vps-name
 
 Run with **--help** option or without any arguments for more info.
+
+## License
+
+Please refer to [LICENSE.md](LICENSE.md).
