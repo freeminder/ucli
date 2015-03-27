@@ -1,0 +1,12 @@
+"provider" : "softlayer"
+"cpu" : 2
+"ram" : 1024
+"disk":
+- "device" : 0
+  "diskImage":
+    "capacity" : 100
+"ephemeral_storage" : true
+"domain" : "webenabled.net"
+"os_code" : "UBUNTU_LATEST"
+"name" : "test1"
+"datacenter" : "dal05"
