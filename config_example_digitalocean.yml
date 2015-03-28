@@ -1,0 +1,7 @@
+name: 'test31337'
+image_id: 9801950
+size_id: 33
+region_id: 3
+flavor_id: 66
+public_key_path: File.expand_path('~/.ssh/id_rsa.pub')
+private_key_path: File.expand_path('~/.ssh/id_rsa'),

@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'fog-softlayer'
+gem 'fog'
 gem 'thor'
+gem 'json'
