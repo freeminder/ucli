@@ -19,6 +19,8 @@ Example contents of the file:
 
     digitalocean: "Fog::Compute.new(provider: 'DigitalOcean', digitalocean_api_key: 'your_api_key', digitalocean_client_id: 'your_client_id')"
     softlayer: "Fog::Compute.new(provider: 'softlayer', softlayer_username: 'your_username', softlayer_api_key: 'your_api_key')"
+    rackspace: "Fog::Compute.new(provider: 'Rackspace', rackspace_username: 'your_username', rackspace_api_key: 'your_api_key', rackspace_region: 'iad')"
+
 
 ## Command line arguments examples
 
