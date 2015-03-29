@@ -24,12 +24,16 @@ Example contents of the file:
 
     $ ./ucli.rb create vps --provider=softlayer --name=my-vps-name --image=UBUNTU_LATEST --region=dal05 --ram=1024 --cpu=1
     $ ./ucli.rb create vps --provider=softlayer --profile profiles.yml --config config_example.yml
+    $ ./ucli.rb create vps --profile profiles.yml --provider digitalocean -n test44100 -i 9801950 -s 33 -r 3 -f 66 --ssh_key_id 534374
+    $ ./ucli.rb destroy -n test44100 --profile profiles.yml --provider digitalocean --force
+    $ ./ucli.rb create vps --profile profiles.yml --provider rackspace -n test31337 -f 2 -i 1a31fdc8-3900-4411-8c08-d8cbf3c9417c -r iad
     $ ./ucli.rb start -n my-vps-name -p softlayer --profile profiles.yml
     $ ./ucli.rb reboot -n my-vps-name -p softlayer
     $ ./ucli.rb stop -n my-vps-name -p digitalocean
-    $ ./ucli.rb destroy -n my-vps-name -p rackspace
+    $ ./ucli.rb list -p rackspace
 
 Please note to omit '=' when calling --profile and --config arguments.
+
 Run with **--help** option or without any arguments for more info.
 
 ## License
