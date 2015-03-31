@@ -1,0 +1,9 @@
+:linode_data_center: 2
+:linode_plan_id: 1
+:linode_payment_term: 48
+:linode_distro_id: 124
+:linode_disk_label: "NewDisk"
+:linode_disk_size: 24576
+:linode_root_password: "Your_r00t_PWD"
+:linode_kernel_id: 138
+:linode_profile_label: "NewProfile"

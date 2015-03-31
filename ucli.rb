@@ -4,7 +4,6 @@ require 'fog'
 require 'thor'
 require 'yaml'
 
-
 # class for create action's subcommands
 class Create < Thor
 	option :name, :type => :string, :default => false, :aliases => "-n", :desc => "Name of VPS"
@@ -20,6 +19,14 @@ class Create < Thor
 	option :public_key, :type => :string, :default => "#{ENV['HOME']}/.ssh/id_rsa.pub", :desc => "Public key's path"
 	option :private_key, :type => :string, :default => "#{ENV['HOME']}/.ssh/id_rsa", :desc => "Private key's path"
 	option :ssh_key_id, :type => :string, :default => false, :desc => "SSH key's ID"
+	option :linode_plan_id, :type => :string, :default => 1, :desc => "Linode's plan ID"
+	option :linode_payment_term, :type => :string, :default => 48, :desc => "Linode's payment term ID"
+	option :linode_distro_id, :type => :string, :default => 124, :desc => "Linode's distro ID"
+	option :linode_disk_label, :type => :string, :default => "NewDisk", :desc => "Linode's disk label"
+	option :linode_disk_size, :type => :string, :default => 24576, :desc => "Linode's disk size in MB"
+	option :linode_root_password, :type => :string, :default => "Your_r00t_PWD", :desc => "Linode's root password"
+	option :linode_kernel_id, :type => :string, :default => 138, :desc => "Linode's kernel ID"
+	option :linode_profile_label, :type => :string, :default => "NewProfile", :desc => "Linode's profile label"
 
 	desc "vps <profile> <name> <region> <image> <cpu> <ram> OR vps <profile> <config>", "Creates VPS at specified cloud provider"
 	def vps
@@ -57,22 +64,53 @@ class Create < Thor
 				:private_key_path => options['private_key'],
 				:rackspace_region => options['region']
 			} if options['provider'] == 'rackspace'
+			@opts = {
+				:linode_data_center => options['region'],
+				:linode_plan_id => options['linode_plan_id'],
+				:linode_payment_term => options['linode_payment_term'],
+				:linode_distro_id => options['linode_distro_id'],
+				:linode_disk_label => options['linode_disk_label'],
+				:linode_disk_size => options['linode_disk_size'],
+				:linode_root_password => options['linode_root_password'],
+				:linode_kernel_id => options['linode_kernel_id'],
+				:linode_profile_label => options['linode_profile_label']
+			} if options['provider'] == 'linode'
 		end
 
 		if ARGV.include? '--profile'
 			if File.exist?("#{options['profile']}")
 				@profile = YAML.load_file("#{options['profile']}")
-			elsif File.exist?("#{ENV['HOME']}/.ucli.yml")
-				@profile = YAML.load_file("#{ENV['HOME']}/.ucli.yml")
 			else
 				abort "No profiles found. You have to create profiles file with credentials first. Exiting."
 			end
+		elsif File.exist?("#{ENV['HOME']}/.ucli.yml")
+				@profile = YAML.load_file("#{ENV['HOME']}/.ucli.yml")
 		else
 			abort "No profiles found. You have to create profiles file with credentials first. Exiting."
 		end
-		@cloud = eval(@profile[options['provider']])
+		@cloud = eval("Fog::Compute.new(#{@profile[options['provider']]})")
 
-		@cloud.servers.create(@opts)
+		if options['provider'] == 'linode'
+			@linode_id = @cloud.linode_create(
+				@opts[:linode_data_center],
+				@opts[:linode_plan_id],
+				@opts[:linode_payment_term])
+			@linode_disk_id = @cloud.linode_disk_createfromdistribution(
+				@linode_id[:body]['DATA']['LinodeID'],
+				@opts[:linode_distro_id],
+				@opts[:linode_disk_label],
+				@opts[:linode_disk_size],
+				@opts[:linode_root_password])
+			@cloud.linode_config_create(
+				@linode_id[:body]['DATA']['LinodeID'],
+				@opts[:linode_kernel_id],
+				@opts[:linode_profile_label],
+				@linode_disk_id[:body]['DATA']['DiskID'])
+			@cloud.servers.get(@linode_id[:body]['DATA']['LinodeID']).boot
+		else
+			@cloud.servers.create(@opts)
+		end
+
 		srv_hash = JSON.parse @cloud.servers.last.to_json
 		print "VPS is currently in the provisioning process"
 		until @cloud.servers.get(srv_hash["id"]).ready? == true
@@ -108,15 +146,15 @@ class ThorClass < Thor
 			if ARGV.include? '--profile'
 				if File.exist?("#{options['profile']}")
 					@profile = YAML.load_file("#{options['profile']}")
-				elsif File.exist?("#{ENV['HOME']}/.ucli.yml")
-					@profile = YAML.load_file("#{ENV['HOME']}/.ucli.yml")
 				else
 					abort "No profiles found. You have to create profiles file with credentials first. Exiting."
 				end
+			elsif File.exist?("#{ENV['HOME']}/.ucli.yml")
+					@profile = YAML.load_file("#{ENV['HOME']}/.ucli.yml")
 			else
 				abort "No profiles found. You have to create profiles file with credentials first. Exiting."
 			end
-			@cloud = eval(@profile[options['provider']])
+			@cloud = eval("Fog::Compute.new(#{@profile[options['provider']]})")
 		end
 		def actions_init
 			profile_init
@@ -129,9 +167,22 @@ class ThorClass < Thor
 			end
 			abort "No VPS found with this name. Exiting." if @srv_id == nil
 			@srv = @cloud.servers.get(@srv_id)
+			if options['provider'] == 'linode'
+				srv_status = JSON.parse @srv.to_json
+				@srv_state = srv_status['status']
+				@srv_state = @srv_state.to_s.gsub "0", "Halted"
+				@srv_state = @srv_state.to_s.gsub "1", "Running"
+				@srv_state = @srv_state.to_s.gsub "2", "Halted"
+			else
+				@srv_state = @srv.state
+				@srv_state = @srv_state.gsub "on", "Running"
+				@srv_state = @srv_state.gsub "active", "Running"
+				@srv_state = @srv_state.gsub "ACTIVE", "Running"
+				@srv_state = @srv_state.gsub "off", "Halted"
+			end
 		end
 		def vps_status
-			puts "VPS #{@vps_name} (id #{@srv_id}) status is #{@srv.state}"
+			puts "VPS #{@vps_name} (id #{@srv_id}) status is #{@srv_state}"
 		end
 	end
 
@@ -155,10 +206,11 @@ class ThorClass < Thor
 	def start
 		actions_init
 		abort "Rackspace doesn't support #{__callee__.to_s} action." if options['provider'] == 'rackspace'
-		if @srv.state == "Halted" || @srv.state == "off"
-			@srv.start
+		if @srv_state == "Halted"
+			@srv.start if options['provider'] != 'linode'
+			@srv.boot if options['provider'] == 'linode'
 			print "VPS is currently in the booting process"
-			until @srv.state == "Running" || @srv.state == "active"
+			until @srv_state == "Running" || @srv_state == "active"
 				print "."
 				sleep 3
 				actions_init
@@ -166,7 +218,7 @@ class ThorClass < Thor
 			print "\n"
 			puts "VPS has been started"
 		else
-			puts "Can't start VPS. Please check that VPS is in halted or off state."
+			puts "Can't start VPS. Please check that VPS is in halted state."
 		end
 		vps_status
 	end
@@ -176,10 +228,11 @@ class ThorClass < Thor
 	def stop
 		actions_init
 		abort "Rackspace doesn't support #{__callee__.to_s} action." if options['provider'] == 'rackspace'
-		if @srv.state == "Running" || @srv.state == "active" || @srv.state = "ACTIVE"
-			@srv.stop
+		if @srv_state == "Running"
+			@srv.stop if options['provider'] != 'linode'
+			@srv.shutdown if options['provider'] == 'linode'
 			print "VPS is currently in the shutting down process"
-			until @srv.state == "Halted" || @srv.state == "off"
+			until @srv_state == "Halted"
 				print "."
 				sleep 3
 				actions_init
@@ -187,7 +240,7 @@ class ThorClass < Thor
 			print "\n"
 			puts "VPS has been stopped"
 		else
-			puts "Can't stop VPS. Please check that VPS is in running or active state."
+			puts "Can't stop VPS. Please check that VPS is in running state."
 		end
 		vps_status
 	end
@@ -196,10 +249,10 @@ class ThorClass < Thor
 	OptionsHelper.method_options
 	def reboot
 		actions_init
-		if @srv.state == "Running" || @srv.state == "active" || @srv.state = "ACTIVE"
+		if @srv_state == "Running"
 			@srv.reboot
 			print "VPS is currently in the restarting process"
-			until @srv.state == "Running" || @srv.state == "active" || @srv.state = "ACTIVE"
+			until @srv_state == "Running"
 				print "."
 				sleep 3
 				actions_init
@@ -207,7 +260,7 @@ class ThorClass < Thor
 			print "\n"
 			puts "VPS has been restarted"
 		else
-			puts "Can't reboot VPS. Please check that VPS is in running or active state."
+			puts "Can't reboot VPS. Please check that VPS is in running state."
 		end
 		vps_status
 	end
@@ -216,7 +269,7 @@ class ThorClass < Thor
 	OptionsHelper.method_options
 	def destroy
 		actions_init
-		if ARGV.include? '--force' || @srv.state == "Halted" || @srv.state == "off" || @srv.state == "ACTIVE"
+		if ARGV.include? '--force' || @srv_state == "Halted"
 			@srv.destroy
 			print "VPS is currently in the destroying process"
 			until @vps_status == "No VPS found with this name. Exiting."
@@ -227,7 +280,8 @@ class ThorClass < Thor
 			print "\n"
 			puts "VPS has been destroyed"
 		else
-			puts "Can't destroy VPS. Please check that VPS is in halted or off state."
+			puts "Can't destroy VPS. Please check that VPS is in halted state or use --force."
+			p @srv_state
 			vps_status
 		end
 	end
