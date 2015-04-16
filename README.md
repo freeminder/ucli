@@ -62,7 +62,7 @@ Example contents of the file:
 
     $ ./ucli.rb storage snapshot -p aws --create -n my-vps-id
     $ ./ucli.rb storage snapshot -p aws --copy snap-95d94813
-    $ ./ucli.rb storage snapshot -p aws --list -n snap-95d94813
+    $ ./ucli.rb storage snapshot -p aws --list -n my-vps-id
     $ ./ucli.rb storage snapshot -p aws --list --all
     $ ./ucli.rb storage snapshot -p aws --delete snap-95d94813
 
