@@ -11,6 +11,9 @@ load 'lib/create.rb'
 # class for list action's subcommands
 load 'lib/list.rb'
 
+# class for storage action's subcommands
+load 'lib/storage.rb'
+
 # main class
 class ThorClass < Thor
 	# class for generic actions (commands)
@@ -158,8 +161,12 @@ class ThorClass < Thor
 	subcommand "create", Create
 
 	# list action calls List class with subcommands
-	desc "list SUBCOMMAND ...ARGS", "list vps, directories or backups"
+	desc "list SUBCOMMAND ...ARGS", "list vps, images or flavors"
 	subcommand "list", List
+
+	# storage action calls Storage class with subcommands
+	desc "storage SUBCOMMAND ...ARGS", "snapshot volume of instance, download or upload a file"
+	subcommand "storage", Storage
 
 end
 

@@ -33,9 +33,24 @@ def clouds_init
 		) if options['provider'] == 'linode'
 end
 def storages_init
-	@storage = Fog::Storage.new(
-		:provider => @profile[options['provider']]['provider'],
-		:aws_access_key_id => @profile[options['provider']]['aws_access_key_id'],
-		:aws_secret_access_key => @profile[options['provider']]['aws_secret_access_key']
-		) if options['provider'] == 'aws'
+	if options['provider'] == 'aws'
+		require 'aws-sdk'
+		@storage = Aws::S3::Client.new(
+			region: options['region'],
+			access_key_id: @profile[options['provider']]['aws_access_key_id'],
+			secret_access_key: @profile[options['provider']]['aws_secret_access_key']
+		)
+		if File.exist?("#{ENV['HOME']}/.aws/config") and ARGV.include? '--aws_default_creds'
+			Aws.config.update({
+				region: options['region'],
+				credentials: Aws::SharedCredentials.new(:path => "#{ENV['HOME']}/.aws/config", :profile_name => "default") })
+		else
+			Aws.config.update({
+				region: options['region'],
+				credentials: Aws::Credentials.new(@profile[options['provider']]['aws_access_key_id'], @profile[options['provider']]['aws_secret_access_key']) })
+		end
+		@ec2 = Aws::EC2::Client.new
+
+	else
+	end
 end

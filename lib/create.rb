@@ -37,7 +37,7 @@ class Create < Thor
 			@opts = {
 				:image_id => options['image'],
 				:flavor_id => options['flavor'],
-				:region_id  => options['region']
+				:region_id	=> options['region']
 			} if options['provider'] == 'aws'
 			@opts = {
 				:name => options['name'],
@@ -112,57 +112,5 @@ class Create < Thor
 		puts "VPS has been created and ready to use"
 	end
 
-	option :provider, :type => :string, :default => "softlayer", :aliases => "-p", :desc => "Provider for new VPS"
-	option :profile, :type => :string, :default => "#{ENV['HOME']}/.ucli.yml", :desc => "Path to provider's credentials for new VPS"
-	desc "directory <name>", "Creates a directory at specified storage provider"
-	def directory
-		profiles_init
-		storages_init
-
-	end
-
-	option :name, :type => :string, :default => false, :aliases => "-n", :desc => "Name of VPS"
-	option :provider, :type => :string, :default => "softlayer", :aliases => "-p", :desc => "Provider for new VPS"
-	option :profile, :type => :string, :default => "#{ENV['HOME']}/.ucli.yml", :desc => "Path to provider's credentials for new VPS"
-	option :region, :type => :string, :default => "us-east-1", :aliases => "-r", :desc => "Region of datacenter"
-	option :snapshot, :type => :boolean, :default => false, :desc => "Create snapshot at specified provider"
-	desc "backup <name>", "Creates a backup(snapshop of volume) at specified provider"
-	def backup
-		profiles_init
-
-		if options['provider'] == 'aws'
-			if not File.exist?("/usr/bin/aws")
-				puts "No AWS CLI found. Installing..."
-				if File.exist?("/usr/bin/apt-get")
-				`apt-get update && apt-get -y install awscli`
-				elsif File.exist?("/usr/bin/yum")
-					`yum -y install curl python`
-					`curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"`
-					`python get-pip.py`
-					`pip install awscli`
-					`rm -f get-pip.py`
-				else
-					abort "Unsupported platform. Currently uCLI has been tested on Ubuntu, Debian, CentOS. Exiting."
-				end
-			else
-			end
-
-			if ARGV.include? '--snapshot'
-				jsonhash = JSON.parse eval("`AWS_ACCESS_KEY_ID=\"#{@profile[options['provider']]['aws_access_key_id']}\" \
-					AWS_SECRET_ACCESS_KEY=\"#{@profile[options['provider']]['aws_secret_access_key']}\" \
-					AWS_DEFAULT_REGION=\"#{options['region']}\" aws ec2 describe-instances --instance-id \"#{options['name']}\"`")
-				@volume_id = jsonhash['Reservations'][0]['Instances'][0]['BlockDeviceMappings'][0]['Ebs']['VolumeId']
-				jsonhash = JSON.parse eval("`AWS_ACCESS_KEY_ID=\"#{@profile[options['provider']]['aws_access_key_id']}\" \
-				AWS_SECRET_ACCESS_KEY=\"#{@profile[options['provider']]['aws_secret_access_key']}\" \
-				AWS_DEFAULT_REGION=\"#{options['region']}\" aws ec2 create-snapshot --volume-id \"#{@volume_id}\"`")
-				puts "Snapshot id #{jsonhash['SnapshotId']} has been created."
-			else
-			end
-
-		elsif options['provider'] == 'softlayer'
-			puts "Softlayer backup work here"
-		else
-		end
-	end
 
 end
