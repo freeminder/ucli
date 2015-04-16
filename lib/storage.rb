@@ -17,11 +17,18 @@ class Storage < Thor
 		storages_init
 
 		if ARGV.include? '--create'
-			pp @storage.create_bucket(bucket: options['name'])
+			@storage.create_bucket(bucket: options['name'])
+			puts "Bucket #{options['name']} has been created."
 		elsif ARGV.include? '--list'
 			pp @storage.list_buckets()
 		elsif  ARGV.include? '--delete'
-			pp @storage.delete_bucket(bucket: options['name'])
+			begin
+				@storage.delete_bucket(bucket: options['name'])
+			rescue Exception => e
+				abort "Error: #{e.message}"
+			else
+				puts "Bucket #{options['name']} has been deleted."
+			end
 		else
 		end
 	end

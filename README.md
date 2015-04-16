@@ -53,7 +53,12 @@ Example contents of the file:
     $ ./ucli.rb stop -n my-vps-name -p digitalocean
     $ ./ucli.rb list vps -p aws
 
+    $ ./ucli.rb storage bucket --create -n bucket21228 -p aws
+    $ ./ucli.rb storage bucket --list
+    $ ./ucli.rb storage bucket --delete -n bucket21228
+
     $ ./ucli.rb storage upload -p aws --bucket bucket21228 --filepath README.md --remotepath README.md
+    $ ./ucli.rb storage download --bucket bucket21228 --remotepath README.md --filepath README.txt
 
     $ ./ucli.rb storage snapshot -p aws --create -n my-vps-id
     $ ./ucli.rb storage snapshot -p aws --copy snap-95d94813
@@ -61,9 +66,6 @@ Example contents of the file:
     $ ./ucli.rb storage snapshot -p aws --list --all
     $ ./ucli.rb storage snapshot -p aws --delete snap-95d94813
 
-    $ ./ucli.rb storage bucket -p aws --create -n bucket21228
-    $ ./ucli.rb storage bucket -p aws --list
-    $ ./ucli.rb storage bucket -p aws --delete -n bucket21228
 
 
 Please note to omit '=' when calling --profile and --config arguments.
