@@ -61,6 +61,8 @@ Example contents of the file:
     $ ./ucli.rb storage download --bucket bucket21228 --remotepath README.md --filepath README.txt
 
     $ ./ucli.rb storage snapshot -p aws --create -n my-vps-id
+    $ ./ucli.rb storage snapshot -p aws --restore snap-95d94813
+    $ ./ucli.rb storage snapshot -p aws --restore --last
     $ ./ucli.rb storage snapshot -p aws --copy snap-95d94813
     $ ./ucli.rb storage snapshot -p aws --list -n my-vps-id
     $ ./ucli.rb storage snapshot -p aws --list --all

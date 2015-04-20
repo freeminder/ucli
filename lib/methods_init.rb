@@ -11,6 +11,7 @@ def profiles_init
 		abort "No profiles found. You have to create profiles file with credentials first. Exiting."
 	end
 end
+
 def clouds_init
 	@cloud = Fog::Compute.new(provider: @profile[options['provider']]['provider'],
 		aws_access_key_id: @profile[options['provider']]['aws_access_key_id'],
@@ -32,6 +33,7 @@ def clouds_init
 		linode_api_key: @profile[options['provider']]['linode_api_key']
 		) if options['provider'] == 'linode'
 end
+
 def storages_init
 	if options['provider'] == 'aws'
 		require 'aws-sdk'
@@ -53,4 +55,37 @@ def storages_init
 
 	else
 	end
+end
+
+def actions_init
+	profiles_init
+	clouds_init
+	@vps_name = options['name']
+	n = 0
+	until n == @cloud.servers.size or @srv_id != nil
+		srv_hash = JSON.parse @cloud.servers.to_json
+		srv_hash[n].select { |k,v| @srv_id = srv_hash[n]["id"] if v == @vps_name }
+		n += 1
+	end
+	abort "No VPS found with this name. Exiting." if @srv_id == nil
+	@srv = @cloud.servers.get(@srv_id)
+	if options['provider'] == 'linode'
+		srv_status = JSON.parse @srv.to_json
+		@srv_state = srv_status['status']
+		@srv_state = @srv_state.to_s.gsub "0", "Halted"
+		@srv_state = @srv_state.to_s.gsub "1", "Running"
+		@srv_state = @srv_state.to_s.gsub "2", "Halted"
+	else
+		@srv_state = @srv.state
+		@srv_state = @srv_state.gsub "on", "Running"
+		@srv_state = @srv_state.gsub "running", "Running"
+		@srv_state = @srv_state.gsub "active", "Running"
+		@srv_state = @srv_state.gsub "ACTIVE", "Running"
+		@srv_state = @srv_state.gsub "off", "Halted"
+		@srv_state = @srv_state.gsub "stopped", "Halted"
+	end
+end
+
+def vps_status
+	puts "VPS #{@vps_name} (id #{@srv_id}) status is #{@srv_state}"
 end

@@ -4,6 +4,7 @@ require 'fog'
 require 'thor'
 require 'yaml'
 require 'pp'
+# require_relative 'lib/methods_init'
 
 # class for create action's subcommands
 load 'lib/create.rb'
@@ -30,37 +31,6 @@ class ThorClass < Thor
 	# methods for generic actions
 	no_commands do
 		load 'lib/methods_init.rb'
-		def actions_init
-			profiles_init
-			clouds_init
-			@vps_name = options['name']
-			n = 0
-			until n == @cloud.servers.size or @srv_id != nil
-				srv_hash = JSON.parse @cloud.servers.to_json
-				srv_hash[n].select { |k,v| @srv_id = srv_hash[n]["id"] if v == @vps_name }
-				n += 1
-			end
-			abort "No VPS found with this name. Exiting." if @srv_id == nil
-			@srv = @cloud.servers.get(@srv_id)
-			if options['provider'] == 'linode'
-				srv_status = JSON.parse @srv.to_json
-				@srv_state = srv_status['status']
-				@srv_state = @srv_state.to_s.gsub "0", "Halted"
-				@srv_state = @srv_state.to_s.gsub "1", "Running"
-				@srv_state = @srv_state.to_s.gsub "2", "Halted"
-			else
-				@srv_state = @srv.state
-				@srv_state = @srv_state.gsub "on", "Running"
-				@srv_state = @srv_state.gsub "running", "Running"
-				@srv_state = @srv_state.gsub "active", "Running"
-				@srv_state = @srv_state.gsub "ACTIVE", "Running"
-				@srv_state = @srv_state.gsub "off", "Halted"
-				@srv_state = @srv_state.gsub "stopped", "Halted"
-			end
-		end
-		def vps_status
-			puts "VPS #{@vps_name} (id #{@srv_id}) status is #{@srv_state}"
-		end
 	end
 
 	# generic actions
@@ -87,6 +57,8 @@ class ThorClass < Thor
 			end
 			print "\n"
 			puts "VPS has been started"
+		elsif @srv_state == "Running"
+			puts "VPS already started."
 		else
 			puts "Can't start VPS. Please check that VPS is in halted state."
 		end
@@ -109,6 +81,8 @@ class ThorClass < Thor
 			end
 			print "\n"
 			puts "VPS has been stopped"
+		elsif @srv_state == "Halted"
+			puts "VPS already stopped."
 		else
 			puts "Can't stop VPS. Please check that VPS is in running state."
 		end
